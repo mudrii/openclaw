@@ -9,7 +9,7 @@ import {
   formatToolOutputForSidebar,
   getTruncatedPreview,
 } from "./tool-helpers";
-import { isToolResultMessage } from "./message-normalizer";
+import { classifyMessage } from "./message-classifier";
 import { extractText } from "./message-extract";
 
 export function extractToolCards(message: unknown): ToolCard[] {
@@ -39,10 +39,13 @@ export function extractToolCards(message: unknown): ToolCard[] {
     cards.push({ kind: "result", name, text });
   }
 
-  if (
-    isToolResultMessage(message) &&
-    !cards.some((card) => card.kind === "result")
-  ) {
+  const classification = classifyMessage(message);
+  const isToolResultMessage =
+    classification.hasToolResults ||
+    classification.roleRaw.toLowerCase() === "toolresult" ||
+    classification.roleRaw.toLowerCase() === "tool_result";
+
+  if (isToolResultMessage && !cards.some((card) => card.kind === "result")) {
     const name =
       (typeof m.toolName === "string" && m.toolName) ||
       (typeof m.tool_name === "string" && m.tool_name) ||
@@ -197,4 +200,3 @@ function extractToolText(item: Record<string, unknown>): string | undefined {
   if (typeof item.content === "string") return item.content;
   return undefined;
 }
-

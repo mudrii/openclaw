@@ -2,10 +2,7 @@ import { html, nothing } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
 import { toSanitizedMarkdownHtml } from "../markdown";
-import {
-  isToolResultMessage,
-  normalizeRoleForGrouping,
-} from "./message-normalizer";
+import { classifyMessage } from "./message-classifier";
 import {
   extractText,
   extractThinking,
@@ -38,16 +35,19 @@ export function renderMessage(
   opts?: { streaming?: boolean; showReasoning?: boolean },
 ) {
   const m = message as Record<string, unknown>;
-  const role = typeof m.role === "string" ? m.role : "unknown";
+  const classification = classifyMessage(message);
   const toolCards = extractToolCards(message);
   const hasToolCards = toolCards.length > 0;
   const isToolResult =
-    isToolResultMessage(message) ||
-    typeof m.toolCallId === "string" ||
-    typeof m.tool_call_id === "string";
+    classification.hasToolResults ||
+    classification.roleRaw.toLowerCase() === "toolresult" ||
+    classification.roleRaw.toLowerCase() === "tool_result" ||
+    (classification.isToolLike && !classification.hasText);
   const extractedText = extractText(message);
   const extractedThinking =
-    opts?.showReasoning && role === "assistant" ? extractThinking(message) : null;
+    opts?.showReasoning && classification.roleKind === "assistant"
+      ? extractThinking(message)
+      : null;
   const contentText = typeof m.content === "string" ? m.content : null;
   const fallback = hasToolCards ? null : JSON.stringify(message, null, 2);
 
@@ -72,23 +72,25 @@ export function renderMessage(
   const timestamp =
     typeof m.timestamp === "number" ? new Date(m.timestamp).toLocaleTimeString() : "";
 
-  const normalizedRole = normalizeRoleForGrouping(role);
+  const roleKind = classification.roleKind;
   const klass =
-    normalizedRole === "assistant"
+    roleKind === "assistant"
       ? "assistant"
-      : normalizedRole === "user"
+      : roleKind === "user"
         ? "user"
-        : normalizedRole === "tool"
+        : roleKind === "tool"
           ? "tool"
           : "other";
   const who =
-    normalizedRole === "assistant"
+    roleKind === "assistant"
       ? "Assistant"
-      : normalizedRole === "user"
+      : roleKind === "user"
         ? "You"
-        : normalizedRole === "tool"
-          ? "Working"
-          : normalizedRole;
+        : roleKind === "tool"
+          ? "Tool"
+          : roleKind === "system"
+            ? "System"
+            : classification.roleRaw;
 
   const toolCallId = typeof m.toolCallId === "string" ? m.toolCallId : "";
   const toolCardBase =
@@ -126,4 +128,3 @@ export function renderMessage(
     </div>
   `;
 }
-

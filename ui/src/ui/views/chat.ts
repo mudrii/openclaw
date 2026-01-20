@@ -3,10 +3,8 @@ import { repeat } from "lit/directives/repeat.js";
 import type { SessionsListResult } from "../types";
 import type { ChatQueueItem } from "../ui-types";
 import type { ChatItem, MessageGroup } from "../types/chat-types";
-import {
-  normalizeMessage,
-  normalizeRoleForGrouping,
-} from "../chat/message-normalizer";
+import { normalizeMessage } from "../chat/message-normalizer";
+import { classifyMessage } from "../chat/message-classifier";
 import { extractText } from "../chat/message-extract";
 import { renderMessage, renderReadingIndicator } from "../chat/legacy-render";
 import {
@@ -272,7 +270,8 @@ function groupMessages(items: ChatItem[]): Array<ChatItem | MessageGroup> {
     }
 
     const normalized = normalizeMessage(item.message);
-    const role = normalizeRoleForGrouping(normalized.role);
+    const classification = classifyMessage(item.message);
+    const role = classification.roleKind;
     const timestamp = normalized.timestamp || Date.now();
 
     if (!currentGroup || currentGroup.role !== role) {
@@ -312,26 +311,18 @@ function buildChatItems(props: ChatProps): Array<ChatItem | MessageGroup> {
   }
   for (let i = historyStart; i < history.length; i++) {
     const msg = history[i];
-    const normalized = normalizeMessage(msg);
-
-    if (!props.showThinking && normalized.role.toLowerCase() === "toolresult") {
-      continue;
-    }
-
     items.push({
       kind: "message",
       key: messageKey(msg, i),
       message: msg,
     });
   }
-  if (props.showThinking) {
-    for (let i = 0; i < tools.length; i++) {
-      items.push({
-        kind: "message",
-        key: messageKey(tools[i], i + history.length),
-        message: tools[i],
-      });
-    }
+  for (let i = 0; i < tools.length; i++) {
+    items.push({
+      kind: "message",
+      key: messageKey(tools[i], i + history.length),
+      message: tools[i],
+    });
   }
 
   if (props.stream !== null) {

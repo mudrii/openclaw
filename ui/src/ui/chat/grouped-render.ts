@@ -3,7 +3,7 @@ import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
 import { toSanitizedMarkdownHtml } from "../markdown";
 import type { MessageGroup } from "../types/chat-types";
-import { isToolResultMessage, normalizeRoleForGrouping } from "./message-normalizer";
+import { classifyMessage } from "./message-classifier";
 import {
   extractText,
   extractThinking,
@@ -62,19 +62,25 @@ export function renderMessageGroup(
   group: MessageGroup,
   opts: { onOpenSidebar?: (content: string) => void; showReasoning: boolean },
 ) {
-  const normalizedRole = normalizeRoleForGrouping(group.role);
+  const roleKind = group.role;
   const who =
-    normalizedRole === "user"
+    roleKind === "user"
       ? "You"
-      : normalizedRole === "assistant"
+      : roleKind === "assistant"
         ? "Assistant"
-        : normalizedRole;
+        : roleKind === "tool"
+          ? "Tool"
+          : roleKind === "system"
+            ? "System"
+            : roleKind;
   const roleClass =
-    normalizedRole === "user"
+    roleKind === "user"
       ? "user"
-      : normalizedRole === "assistant"
+      : roleKind === "assistant"
         ? "assistant"
-        : "other";
+        : roleKind === "tool"
+          ? "tool"
+          : "other";
   const timestamp = new Date(group.timestamp).toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit",
@@ -82,7 +88,7 @@ export function renderMessageGroup(
 
   return html`
     <div class="chat-group ${roleClass}">
-      ${renderAvatar(group.role)}
+      ${renderAvatar(roleKind)}
       <div class="chat-group-messages">
         ${group.messages.map((item, index) =>
           renderGroupedMessage(
@@ -105,21 +111,14 @@ export function renderMessageGroup(
 }
 
 function renderAvatar(role: string) {
-  const normalized = normalizeRoleForGrouping(role);
   const initial =
-    normalized === "user"
-      ? "U"
-      : normalized === "assistant"
-        ? "A"
-        : normalized === "tool"
-          ? "⚙"
-          : "?";
+    role === "user" ? "U" : role === "assistant" ? "A" : role === "tool" ? "⚙" : "?";
   const className =
-    normalized === "user"
+    role === "user"
       ? "user"
-      : normalized === "assistant"
+      : role === "assistant"
         ? "assistant"
-        : normalized === "tool"
+        : role === "tool"
           ? "tool"
           : "other";
   return html`<div class="chat-avatar ${className}">${initial}</div>`;
@@ -130,21 +129,22 @@ function renderGroupedMessage(
   opts: { isStreaming: boolean; showReasoning: boolean },
   onOpenSidebar?: (content: string) => void,
 ) {
-  const m = message as Record<string, unknown>;
-  const role = typeof m.role === "string" ? m.role : "unknown";
+  const classification = classifyMessage(message);
+  const roleLower = classification.roleRaw.toLowerCase();
   const isToolResult =
-    isToolResultMessage(message) ||
-    role.toLowerCase() === "toolresult" ||
-    role.toLowerCase() === "tool_result" ||
-    typeof m.toolCallId === "string" ||
-    typeof m.tool_call_id === "string";
+    classification.hasToolResults ||
+    roleLower === "toolresult" ||
+    roleLower === "tool_result" ||
+    (classification.isToolLike && !classification.hasText);
 
   const toolCards = extractToolCards(message);
   const hasToolCards = toolCards.length > 0;
 
   const extractedText = extractText(message);
   const extractedThinking =
-    opts.showReasoning && role === "assistant" ? extractThinking(message) : null;
+    opts.showReasoning && classification.roleKind === "assistant"
+      ? extractThinking(message)
+      : null;
   const markdownBase = extractedText?.trim() ? extractedText : null;
   const reasoningMarkdown = extractedThinking
     ? formatReasoningMarkdown(extractedThinking)
@@ -181,4 +181,3 @@ function renderGroupedMessage(
     </div>
   `;
 }
-

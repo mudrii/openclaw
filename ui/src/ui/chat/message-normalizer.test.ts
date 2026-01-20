@@ -1,9 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  normalizeMessage,
-  normalizeRoleForGrouping,
-  isToolResultMessage,
-} from "./message-normalizer";
+import { normalizeMessage } from "./message-normalizer";
+import { classifyMessage } from "./message-classifier";
 
 describe("message-normalizer", () => {
   describe("normalizeMessage", () => {
@@ -57,24 +54,24 @@ describe("message-normalizer", () => {
       expect(result.content).toEqual([{ type: "text", text: "Alternative format" }]);
     });
 
-    it("detects tool result by toolCallId", () => {
+    it("preserves role when toolCallId is present", () => {
       const result = normalizeMessage({
         role: "assistant",
         toolCallId: "call-123",
         content: "Tool output",
       });
 
-      expect(result.role).toBe("toolResult");
+      expect(result.role).toBe("assistant");
     });
 
-    it("detects tool result by tool_call_id (snake_case)", () => {
+    it("preserves role when tool_call_id is present", () => {
       const result = normalizeMessage({
         role: "assistant",
         tool_call_id: "call-456",
         content: "Tool output",
       });
 
-      expect(result.role).toBe("toolResult");
+      expect(result.role).toBe("assistant");
     });
 
     it("handles missing role", () => {
@@ -102,68 +99,54 @@ describe("message-normalizer", () => {
     });
   });
 
-  describe("normalizeRoleForGrouping", () => {
-    it("returns tool for toolresult", () => {
-      expect(normalizeRoleForGrouping("toolresult")).toBe("tool");
-      expect(normalizeRoleForGrouping("toolResult")).toBe("tool");
-      expect(normalizeRoleForGrouping("TOOLRESULT")).toBe("tool");
+  describe("classifyMessage", () => {
+    it("keeps assistant role when text + tool blocks are mixed", () => {
+      const result = classifyMessage({
+        role: "assistant",
+        content: [
+          { type: "text", text: "before" },
+          { type: "toolCall", id: "call_1", name: "read", arguments: {} },
+          { type: "thinking", thinking: "after" },
+          { type: "text", text: "after text" },
+        ],
+      });
+
+      expect(result.roleKind).toBe("assistant");
+      expect(result.hasText).toBe(true);
+      expect(result.hasToolCalls).toBe(true);
+      expect(result.hasThinking).toBe(true);
     });
 
-    it("returns tool for tool_result", () => {
-      expect(normalizeRoleForGrouping("tool_result")).toBe("tool");
-      expect(normalizeRoleForGrouping("TOOL_RESULT")).toBe("tool");
+    it("classifies tool-only assistant messages as tool", () => {
+      const result = classifyMessage({
+        role: "assistant",
+        toolCallId: "call-1",
+        content: [{ type: "toolCall", id: "call-1", name: "read" }],
+      });
+
+      expect(result.roleKind).toBe("tool");
+      expect(result.hasText).toBe(false);
+      expect(result.isToolLike).toBe(true);
     });
 
-    it("returns tool for tool", () => {
-      expect(normalizeRoleForGrouping("tool")).toBe("tool");
-      expect(normalizeRoleForGrouping("Tool")).toBe("tool");
+    it("classifies tool role messages as tool", () => {
+      const result = classifyMessage({
+        role: "tool",
+        content: "Sunny, 70F.",
+      });
+
+      expect(result.roleKind).toBe("tool");
+      expect(result.hasText).toBe(true);
     });
 
-    it("returns tool for function", () => {
-      expect(normalizeRoleForGrouping("function")).toBe("tool");
-      expect(normalizeRoleForGrouping("Function")).toBe("tool");
-    });
+    it("classifies toolResult role messages as tool", () => {
+      const result = classifyMessage({
+        role: "toolResult",
+        content: [{ type: "text", text: "ok" }],
+      });
 
-    it("preserves user role", () => {
-      expect(normalizeRoleForGrouping("user")).toBe("user");
-      expect(normalizeRoleForGrouping("User")).toBe("User");
-    });
-
-    it("preserves assistant role", () => {
-      expect(normalizeRoleForGrouping("assistant")).toBe("assistant");
-    });
-
-    it("preserves system role", () => {
-      expect(normalizeRoleForGrouping("system")).toBe("system");
-    });
-  });
-
-  describe("isToolResultMessage", () => {
-    it("returns true for toolresult role", () => {
-      expect(isToolResultMessage({ role: "toolresult" })).toBe(true);
-      expect(isToolResultMessage({ role: "toolResult" })).toBe(true);
-      expect(isToolResultMessage({ role: "TOOLRESULT" })).toBe(true);
-    });
-
-    it("returns true for tool_result role", () => {
-      expect(isToolResultMessage({ role: "tool_result" })).toBe(true);
-      expect(isToolResultMessage({ role: "TOOL_RESULT" })).toBe(true);
-    });
-
-    it("returns false for other roles", () => {
-      expect(isToolResultMessage({ role: "user" })).toBe(false);
-      expect(isToolResultMessage({ role: "assistant" })).toBe(false);
-      expect(isToolResultMessage({ role: "tool" })).toBe(false);
-    });
-
-    it("returns false for missing role", () => {
-      expect(isToolResultMessage({})).toBe(false);
-      expect(isToolResultMessage({ content: "test" })).toBe(false);
-    });
-
-    it("returns false for non-string role", () => {
-      expect(isToolResultMessage({ role: 123 })).toBe(false);
-      expect(isToolResultMessage({ role: null })).toBe(false);
+      expect(result.roleKind).toBe("tool");
+      expect(result.isToolLike).toBe(true);
     });
   });
 });
