@@ -171,6 +171,15 @@ describe("subagent announce formatting", () => {
       },
     };
 
+    let resolveCalled: (() => void) | undefined;
+    const called = new Promise<void>((resolve) => {
+      resolveCalled = resolve;
+    });
+    agentSpy.mockImplementationOnce(async (..._args) => {
+      resolveCalled?.();
+      return { runId: "run-main", status: "ok" } as any;
+    });
+
     const didAnnounce = await runSubagentAnnounceFlow({
       childSessionKey: "agent:main:subagent:test",
       childRunId: "run-999",
@@ -186,7 +195,7 @@ describe("subagent announce formatting", () => {
     });
 
     expect(didAnnounce).toBe(true);
-    await new Promise((r) => setTimeout(r, 5));
+    await called;
 
     const call = agentSpy.mock.calls[0]?.[0] as { params?: Record<string, unknown> };
     expect(call?.params?.channel).toBe("whatsapp");
@@ -314,6 +323,15 @@ describe("subagent announce formatting", () => {
       },
     };
 
+    let resolveCalled: (() => void) | undefined;
+    const called = new Promise<void>((resolve) => {
+      resolveCalled = resolve;
+    });
+    agentSpy.mockImplementationOnce(async (..._args) => {
+      resolveCalled?.();
+      return { runId: "run-main", status: "ok" } as any;
+    });
+
     const didAnnounce = await runSubagentAnnounceFlow({
       childSessionKey: "agent:main:subagent:test",
       childRunId: "run-stale-channel",
@@ -330,10 +348,12 @@ describe("subagent announce formatting", () => {
     });
 
     expect(didAnnounce).toBe(true);
-    await new Promise((r) => setTimeout(r, 5));
+    await called;
 
     const call = agentSpy.mock.calls[0]?.[0] as { params?: Record<string, unknown> };
-    // The channel should match requesterOrigin, NOT the stale session entry.
+    // This would fail on main prior to the fix: mergeDeliveryContext(session, requesterOrigin) would
+    // keep the stale session channel ("whatsapp") while taking the requesterOrigin `to`, creating a mismatch.
+    expect(call?.params?.channel).not.toBe("whatsapp");
     expect(call?.params?.channel).toBe("bluebubbles");
     expect(call?.params?.to).toBe("bluebubbles:chat_guid:123");
   });
