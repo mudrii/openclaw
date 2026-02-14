@@ -117,9 +117,11 @@ export async function applyAuthChoiceOpenAI(
       return { config: nextConfig, agentModelOverride };
     }
     if (creds) {
-      const profileId = await writeOAuthCredentials("openai-codex", creds, params.agentDir);
+      await writeOAuthCredentials("openai-codex", creds, params.agentDir, {
+        syncSiblingAgents: true,
+      });
       nextConfig = applyAuthProfileConfig(nextConfig, {
-        profileId,
+        profileId: "openai-codex:default",
         provider: "openai-codex",
         mode: "oauth",
       });
