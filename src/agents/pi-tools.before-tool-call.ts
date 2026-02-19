@@ -180,6 +180,9 @@ export function wrapToolWithBeforeToolCallHook(
   if (!execute) {
     return tool;
   }
+  if (isToolWrappedWithBeforeToolCallHook(tool)) {
+    return tool;
+  }
   const toolName = tool.name || "tool";
   const wrappedTool: AnyAgentTool = {
     ...tool,
