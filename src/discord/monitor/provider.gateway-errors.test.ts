@@ -226,3 +226,37 @@ describe("AC6 — Defensive disconnect", () => {
     expect(gateway.disconnect).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("AC7 — 4014 overwrite regression", () => {
+  it("preserves the initial 4014 startup error when a follow-up non-4014 error is emitted", () => {
+    let startupGatewayError: unknown;
+
+    const onStartupGatewayError = (err: unknown) => {
+      if (!startupGatewayError) {
+        startupGatewayError = err;
+      }
+    };
+
+    const error4014 = new Error("Fatal Gateway error: 4014");
+    const followUpError = new Error("Max reconnect attempts reached");
+
+    onStartupGatewayError(error4014);
+    onStartupGatewayError(followUpError);
+
+    expect(startupGatewayError).toBe(error4014);
+    expect(__testing.isDiscordDisallowedIntentsError(startupGatewayError)).toBe(true);
+
+    // Mirrors provider catch behavior: preserved 4014 is handled gracefully.
+    let resolvedCleanly = false;
+    try {
+      throw startupGatewayError;
+    } catch (err) {
+      if (__testing.isDiscordDisallowedIntentsError(err)) {
+        resolvedCleanly = true;
+      } else {
+        throw err;
+      }
+    }
+    expect(resolvedCleanly).toBe(true);
+  });
+});

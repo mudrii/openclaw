@@ -532,7 +532,9 @@ export async function monitorDiscordProvider(opts: MonitorDiscordOpts = {}) {
   let startupGatewayError: unknown;
   let loggedDisallowedIntents = false;
   const onStartupGatewayError = (err: unknown) => {
-    startupGatewayError = err;
+    if (!startupGatewayError) {
+      startupGatewayError = err;
+    }
     if (isDiscordDisallowedIntentsError(err)) {
       if (!loggedDisallowedIntents) {
         runtime.error?.(danger(formatDiscordDisallowedIntentsMessage()));
