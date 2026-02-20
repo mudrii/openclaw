@@ -276,10 +276,12 @@ describe("runWithModelFallback", () => {
       run,
     });
 
+    // Override model failed with model_not_found → falls back to configured primary.
+    // (Same candidate-resolution path as other override-model failures.)
     expect(result.result).toBe("ok");
     expect(run).toHaveBeenCalledTimes(2);
-    expect(run.mock.calls[1]?.[0]).toBe("anthropic");
-    expect(run.mock.calls[1]?.[1]).toBe("claude-haiku-3-5");
+    expect(run.mock.calls[1]?.[0]).toBe("openai");
+    expect(run.mock.calls[1]?.[1]).toBe("gpt-4.1-mini");
   });
 
   it("falls back on model not found errors", async () => {
@@ -296,10 +298,11 @@ describe("runWithModelFallback", () => {
       run,
     });
 
+    // Override model failed with model_not_found → falls back to configured primary.
     expect(result.result).toBe("ok");
     expect(run).toHaveBeenCalledTimes(2);
-    expect(run.mock.calls[1]?.[0]).toBe("anthropic");
-    expect(run.mock.calls[1]?.[1]).toBe("claude-haiku-3-5");
+    expect(run.mock.calls[1]?.[0]).toBe("openai");
+    expect(run.mock.calls[1]?.[1]).toBe("gpt-4.1-mini");
   });
 
   it("skips providers when all profiles are in cooldown", async () => {
