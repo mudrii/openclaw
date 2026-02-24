@@ -112,6 +112,12 @@
 - Group related changes; avoid bundling unrelated refactors.
 - Before substantive review or prep, rebase the PR branch onto current `main` and resolve conflicts.
 - Run gates before merge: `pnpm build`, `pnpm check`, and `pnpm test` unless docs-only criteria explicitly allow skipping heavy lanes.
+- Review/prep artifacts are required in maintainer workflow: `.local/review.md`, `.local/review.json`, `.local/prep.md`, and prepare env metadata.
+- Resolve all `BLOCKER` and `IMPORTANT` findings from review artifacts before merge.
+- Changelog entry is mandatory in maintainer workflow and should include `(#<PR>)` and `thanks @<author>` when author metadata is available.
+- For squash merges, include `Co-authored-by:` trailers for the PR author (and maintainer when maintainer performed prep/merge).
+- Do not use `--auto` merges for maintainer landings; merge only after required checks are green and branch is up to date with `main`.
+- After merge, add a PR comment summarizing what landed and include merge SHA(s).
 - Keep PRs focused, describe what/why, and mark AI-assisted PRs with testing depth.
 - For new feature/architecture work, start with GitHub Discussion before implementation.
 - PR submission template (canonical): `.github/pull_request_template.md`

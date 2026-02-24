@@ -722,6 +722,10 @@ src/<module>/
 - **Rebase is mandatory before substantive review/prep.** Rebase PR branch onto current `main` first, resolve conflicts, then evaluate correctness.
 - **Resolve all BLOCKER/IMPORTANT findings before merge.** Treat review artifacts as requirements, not suggestions.
 - **For AI-assisted PRs, require transparency.** Mark AI assistance and state testing depth in PR description.
+- **Keep workflow artifacts complete.** Ensure `.local/review.md`, `.local/review.json`, and `.local/prep.md` are present before merge.
+- **Use deterministic merge behavior.** Avoid `--auto`; merge after required checks are green and branch is up to date.
+- **Preserve attribution.** For squash merges, include `Co-authored-by:` trailers for the PR author (and maintainer when applicable).
+- **Document landing outcome on PR.** Post-merge comment should summarize what landed and include merge SHA(s).
 
 ### Documentation Update Guardrails (from recent failures)
 
