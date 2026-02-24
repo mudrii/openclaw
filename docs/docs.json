@@ -1303,14 +1303,6 @@
                 ]
               },
               {
-                "group": "Development PR reviews",
-                "pages": [
-                  "development/pr-reviews/pr-16960-analysis",
-                  "development/pr-reviews/pr-16946-validation-opus",
-                  "development/pr-reviews/pr-16946-validation-minimax"
-                ]
-              },
-              {
                 "group": "Concept internals",
                 "pages": [
                   "concepts/typebox",

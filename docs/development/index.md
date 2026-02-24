@@ -40,15 +40,6 @@ This section provides deep analysis of the OpenClaw codebase, designed for both 
 | Security & Plugins                                      | [Security Plugins](/development/analysis/security-plugins)         |
 | Utilities & Support (auto-reply, logging, pairing)      | [Utils Support](/development/analysis/utils-support)               |
 
-### PR Reviews
-
-Example PR analyses demonstrating how to use DEVELOPER-REFERENCE.md for code review:
-
-| PR                                                                                    | Analysis                                                                                                                                |
-| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [#16960](https://github.com/openclaw/openclaw/pull/16960) — perf: hook cache-busting  | [PR 16960 Analysis](/development/pr-reviews/pr-16960-analysis)                                                                          |
-| [#16946](https://github.com/openclaw/openclaw/pull/16946) — fix: cron timer spin loop | [Opus review](/development/pr-reviews/pr-16946-validation-opus) · [MiniMax review](/development/pr-reviews/pr-16946-validation-minimax) |
-
 ## For AI Agents
 
 Load `DEVELOPER-REFERENCE.md` before making any code changes to OpenClaw. It provides:
@@ -101,7 +92,7 @@ When updating, please:
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/openclaw/openclaw/blob/main/LICENSE).
 
 ## Links
 
