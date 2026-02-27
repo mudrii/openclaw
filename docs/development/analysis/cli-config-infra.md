@@ -1,8 +1,8 @@
-<!-- markdownlint-disable-file -->
-
 # OpenClaw CLI, Config & Infrastructure — Comprehensive Analysis
 
-> Updated: 2026-02-25 | Version: v2026.2.24 | Codebase: ~/src/openclaw | Cluster: CLI, CONFIG & INFRASTRUCTURE
+<!-- markdownlint-disable MD024 -->
+
+> Updated: 2026-02-27 | Version: v2026.2.26 | Codebase: ~/src/openclaw | Cluster: CLI, CONFIG & INFRASTRUCTURE
 
 ---
 
@@ -33,7 +33,7 @@ The CLI module is the **entry point and command registration layer** for the `op
 - `program.ts` → re-exports `buildProgram()` from `program/build-program.ts`
 - `route.ts` → `tryRouteCli()` — fast-path routing before Commander
 
-### File Inventory (202 files)
+### File Inventory (258 files)
 
 #### Core CLI Bootstrap
 
@@ -335,14 +335,14 @@ type RouteSpec = {
 | `cron-cli.test.ts`                                             | Cron CLI commands          |
 | `cron-cli/shared.test.ts`                                      | Cron shared utilities      |
 | `daemon-cli-compat.test.ts`                                    | Daemon CLI backward compat |
-| `daemon-cli.coverage.e2e.test.ts`                              | Daemon CLI E2E             |
+| `daemon-cli.coverage.test.ts`                                  | Daemon CLI coverage        |
 | `deps.test.ts`                                                 | CLI dependency checks      |
 | `dns-cli.test.ts`                                              | DNS CLI commands           |
 | `exec-approvals-cli.test.ts`                                   | Exec approvals CLI         |
-| `gateway-cli.coverage.e2e.test.ts`                             | Gateway CLI E2E            |
+| `gateway-cli.coverage.test.ts`                                 | Gateway CLI coverage       |
 | `gateway-cli/discover.test.ts`                                 | Gateway discovery          |
 | `gateway-cli/run-loop.test.ts`                                 | Gateway run loop           |
-| `gateway.sigterm.e2e.test.ts`                                  | Gateway SIGTERM handling   |
+| `gateway.sigterm.test.ts`                                      | Gateway SIGTERM handling   |
 | `hooks-cli.test.ts`                                            | Hooks CLI                  |
 | `logs-cli.test.ts`                                             | Logs CLI                   |
 | `memory-cli.test.ts`                                           | Memory CLI                 |
@@ -387,7 +387,7 @@ The commands module contains **business logic implementations** for all CLI comm
 
 **Entry Points:** Each file exports one or more command functions invoked by `src/cli` registrars.
 
-### File Inventory (261 files)
+### File Inventory (319 files)
 
 #### Agent Commands
 
@@ -412,39 +412,38 @@ The commands module contains **business logic implementations** for all CLI comm
 
 #### Auth & Onboarding
 
-| File                                      | Description                         |
-| ----------------------------------------- | ----------------------------------- |
-| `auth-choice.ts`                          | Provider auth choice flow           |
-| `auth-choice-prompt.ts`                   | Auth choice interactive prompts     |
-| `auth-choice-options.ts`                  | Auth choice CLI options             |
-| `auth-choice-legacy.ts`                   | Legacy auth migration               |
-| `auth-choice.api-key.ts`                  | API key auth flow                   |
-| `auth-choice.apply.ts`                    | Apply auth choice to config         |
-| `auth-choice.apply.anthropic.ts`          | Anthropic-specific auth application |
-| `auth-choice.apply.api-providers.ts`      | Generic API provider auth           |
-| `auth-choice.apply.copilot-proxy.ts`      | GitHub Copilot proxy auth           |
-| `auth-choice.apply.github-copilot.ts`     | GitHub Copilot auth                 |
-| `auth-choice.apply.google-antigravity.ts` | Google Antigravity auth             |
-| `auth-choice.apply.google-gemini-cli.ts`  | Gemini CLI auth                     |
-| `auth-choice.apply.huggingface.ts`        | HuggingFace auth                    |
-| `auth-choice.apply.minimax.ts`            | MiniMax auth                        |
-| `auth-choice.apply.oauth.ts`              | Generic OAuth auth                  |
-| `auth-choice.apply.openai.ts`             | OpenAI auth                         |
-| `auth-choice.apply.openrouter.ts`         | OpenRouter auth                     |
-| `auth-choice.apply.plugin-provider.ts`    | Plugin provider auth                |
-| `auth-choice.apply.qwen-portal.ts`        | Qwen Portal auth                    |
-| `auth-choice.apply.vllm.ts`               | vLLM auth                           |
-| `auth-choice.apply.xai.ts`                | xAI auth                            |
-| `auth-choice.apply-helpers.ts`            | Auth application helpers            |
-| `auth-choice.default-model.ts`            | Default model selection for auth    |
-| `auth-choice.model-check.ts`              | Model availability check            |
-| `auth-choice.preferred-provider.ts`       | Preferred provider resolution       |
-| `auth-token.ts`                           | Auth token utilities                |
-| `chutes-oauth.ts`                         | Chutes OAuth flow                   |
-| `oauth-env.ts`                            | OAuth environment setup             |
-| `oauth-flow.ts`                           | OAuth flow implementation           |
-| `openai-codex-oauth.ts`                   | OpenAI Codex OAuth                  |
-| `provider-auth-helpers.ts`                | Provider auth helper utilities      |
+| File                                     | Description                         |
+| ---------------------------------------- | ----------------------------------- |
+| `auth-choice.ts`                         | Provider auth choice flow           |
+| `auth-choice-prompt.ts`                  | Auth choice interactive prompts     |
+| `auth-choice-options.ts`                 | Auth choice CLI options             |
+| `auth-choice-legacy.ts`                  | Legacy auth migration               |
+| `auth-choice.api-key.ts`                 | API key auth flow                   |
+| `auth-choice.apply.ts`                   | Apply auth choice to config         |
+| `auth-choice.apply.anthropic.ts`         | Anthropic-specific auth application |
+| `auth-choice.apply.api-providers.ts`     | Generic API provider auth           |
+| `auth-choice.apply.copilot-proxy.ts`     | GitHub Copilot proxy auth           |
+| `auth-choice.apply.github-copilot.ts`    | GitHub Copilot auth                 |
+| `auth-choice.apply.google-gemini-cli.ts` | Gemini CLI auth                     |
+| `auth-choice.apply.huggingface.ts`       | HuggingFace auth                    |
+| `auth-choice.apply.minimax.ts`           | MiniMax auth                        |
+| `auth-choice.apply.oauth.ts`             | Generic OAuth auth                  |
+| `auth-choice.apply.openai.ts`            | OpenAI auth                         |
+| `auth-choice.apply.openrouter.ts`        | OpenRouter auth                     |
+| `auth-choice.apply.plugin-provider.ts`   | Plugin provider auth                |
+| `auth-choice.apply.qwen-portal.ts`       | Qwen Portal auth                    |
+| `auth-choice.apply.vllm.ts`              | vLLM auth                           |
+| `auth-choice.apply.xai.ts`               | xAI auth                            |
+| `auth-choice.apply-helpers.ts`           | Auth application helpers            |
+| `auth-choice.default-model.ts`           | Default model selection for auth    |
+| `auth-choice.model-check.ts`             | Model availability check            |
+| `auth-choice.preferred-provider.ts`      | Preferred provider resolution       |
+| `auth-token.ts`                          | Auth token utilities                |
+| `chutes-oauth.ts`                        | Chutes OAuth flow                   |
+| `oauth-env.ts`                           | OAuth environment setup             |
+| `oauth-flow.ts`                          | OAuth flow implementation           |
+| `openai-codex-oauth.ts`                  | OpenAI Codex OAuth                  |
+| `provider-auth-helpers.ts`               | Provider auth helper utilities      |
 
 #### Onboarding
 
@@ -639,7 +638,7 @@ The config module is the **central configuration system** for OpenClaw. It defin
 - `schema.ts` — JSON Schema generation from Zod
 - `zod-schema.ts` — Zod schema definition
 
-### File Inventory (165 files)
+### File Inventory (198 files)
 
 #### Core
 
@@ -964,7 +963,7 @@ The infra module provides **cross-cutting infrastructure utilities** used throug
 
 **Architecture Pattern:** Utility library with functional modules. No central entry point — each file is imported independently.
 
-### File Inventory (223 files, grouped by domain)
+### File Inventory (326 files, grouped by domain)
 
 #### Environment & Runtime
 
@@ -1109,25 +1108,24 @@ The infra module provides **cross-cutting infrastructure utilities** used throug
 
 #### Provider Usage & Cost Tracking
 
-| File                                  | Description                 |
-| ------------------------------------- | --------------------------- |
-| `provider-usage.ts`                   | Provider usage aggregation  |
-| `provider-usage.auth.ts`              | Provider auth normalization |
-| `provider-usage.fetch.ts`             | Fetch usage from providers  |
-| `provider-usage.fetch.claude.ts`      | Anthropic usage             |
-| `provider-usage.fetch.gemini.ts`      | Google Gemini usage         |
-| `provider-usage.fetch.codex.ts`       | OpenAI Codex usage          |
-| `provider-usage.fetch.copilot.ts`     | GitHub Copilot usage        |
-| `provider-usage.fetch.minimax.ts`     | MiniMax usage               |
-| `provider-usage.fetch.zai.ts`         | xAI usage                   |
-| `provider-usage.fetch.antigravity.ts` | Google Antigravity usage    |
-| `provider-usage.fetch.shared.ts`      | Shared usage fetch          |
-| `provider-usage.format.ts`            | Usage formatting            |
-| `provider-usage.load.ts`              | Usage data loading          |
-| `provider-usage.shared.ts`            | Shared usage utilities      |
-| `provider-usage.types.ts`             | Usage types                 |
-| `session-cost-usage.ts`               | Session cost tracking       |
-| `session-cost-usage.types.ts`         | Session cost types          |
+| File                              | Description                 |
+| --------------------------------- | --------------------------- |
+| `provider-usage.ts`               | Provider usage aggregation  |
+| `provider-usage.auth.ts`          | Provider auth normalization |
+| `provider-usage.fetch.ts`         | Fetch usage from providers  |
+| `provider-usage.fetch.claude.ts`  | Anthropic usage             |
+| `provider-usage.fetch.gemini.ts`  | Google Gemini usage         |
+| `provider-usage.fetch.codex.ts`   | OpenAI Codex usage          |
+| `provider-usage.fetch.copilot.ts` | GitHub Copilot usage        |
+| `provider-usage.fetch.minimax.ts` | MiniMax usage               |
+| `provider-usage.fetch.zai.ts`     | xAI usage                   |
+| `provider-usage.fetch.shared.ts`  | Shared usage fetch          |
+| `provider-usage.format.ts`        | Usage formatting            |
+| `provider-usage.load.ts`          | Usage data loading          |
+| `provider-usage.shared.ts`        | Shared usage utilities      |
+| `provider-usage.types.ts`         | Usage types                 |
+| `session-cost-usage.ts`           | Session cost tracking       |
+| `session-cost-usage.types.ts`     | Session cost types          |
 
 #### Miscellaneous
 
@@ -1203,7 +1201,7 @@ The daemon module manages **system service installation** for the OpenClaw gatew
 
 **Architecture Pattern:** Platform abstraction via `GatewayService` interface with platform-specific implementations.
 
-### File Inventory (36 files)
+### File Inventory (42 files)
 
 | File                 | Description                                                         |
 | -------------------- | ------------------------------------------------------------------- |
@@ -1304,7 +1302,7 @@ The wizard module implements the **interactive onboarding wizard** flow that gui
 
 **Architecture Pattern:** Step-based wizard flow with a `WizardPrompter` abstraction for testability.
 
-### File Inventory (12 files)
+### File Inventory (13 files)
 
 | File                           | Description                                         |
 | ------------------------------ | --------------------------------------------------- |
@@ -1370,7 +1368,7 @@ The TUI module implements a **terminal-based chat interface** for interacting wi
 
 **Architecture Pattern:** Component-based TUI with event handlers, a gateway WebSocket chat client, and reactive state.
 
-### File Inventory (39 files)
+### File Inventory (45 files)
 
 | File                                   | Description                                                             |
 | -------------------------------------- | ----------------------------------------------------------------------- |
@@ -1460,7 +1458,7 @@ The terminal module provides **low-level terminal rendering primitives**: ANSI h
 
 **Architecture Pattern:** Pure utility functions for terminal output.
 
-### File Inventory (14 files)
+### File Inventory (16 files)
 
 | File               | Description                                                  |
 | ------------------ | ------------------------------------------------------------ |

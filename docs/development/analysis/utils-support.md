@@ -1,29 +1,29 @@
-<!-- markdownlint-disable-file -->
-
 # Utilities & Support Modules — Comprehensive Analysis
 
-**Updated:** 2026-02-25 | **Version:** v2026.2.24
+<!-- markdownlint-disable MD024 -->
+
+**Updated:** 2026-02-27 | **Version:** v2026.2.26
 **Cluster:** Utilities & Support Modules  
-**Total files analyzed:** ~330 TypeScript files + 313 Swift files across 14 modules
+**Total files analyzed:** ~423 TypeScript files + 313 Swift files across 14 modules
 
 ---
 
 ## Table of Contents
 
-1. [src/auto-reply (223 files)](#srcauto-reply)
-2. [src/utils (22 files)](#srcutils)
-3. [src/shared (16 files)](#srcshared)
-4. [src/types (9 files)](#srctypes)
-5. [src/logging (20 files)](#srclogging)
-6. [src/process (11 files)](#srcprocess)
-7. [src/pairing (5 files)](#srcpairing)
-8. [src/node-host (7 files)](#srcnode-host)
+1. [src/auto-reply (248 files)](#srcauto-reply)
+2. [src/utils (28 files)](#srcutils)
+3. [src/shared (37 files)](#srcshared)
+4. [src/types (8 files)](#srctypes)
+5. [src/logging (24 files)](#srclogging)
+6. [src/process (24 files)](#srcprocess)
+7. [src/pairing (8 files)](#srcpairing)
+8. [src/node-host (13 files)](#srcnode-host)
 9. [apps/macos (313 Swift files)](#appsmacos)
 10. [src/compat (1 file)](#srccompat)
 11. [src/scripts (1 file)](#srcscripts)
 12. [src/docs (1 file)](#srcdocs)
-13. [src/test-helpers (2 files)](#srctest-helpers)
-14. [src/test-utils (4 files)](#srctest-utils)
+13. [src/test-helpers (4 files)](#srctest-helpers)
+14. [src/test-utils (26 files)](#srctest-utils)
 
 ---
 
@@ -50,7 +50,7 @@ The **auto-reply** module is the central brain of OpenClaw — the complete pipe
 - `reply.ts` — re-exports `getReplyFromConfig()` and directive extractors
 - `reply/get-reply.ts` — `getReplyFromConfig()` — the main orchestrator
 
-### File Inventory (129 source files, 86 test files)
+### File Inventory (179 source files, 69 test files)
 
 #### Top-level files
 
@@ -338,7 +338,7 @@ Post-processing [agent-runner.ts continued]
 - `<channel>.textChunkLimit`, `<channel>.chunkMode` — per-channel chunking
 - `<channel>.blockStreamingCoalesce` — block streaming settings
 
-### Test Coverage (86 test files)
+### Test Coverage (69 test files)
 
 Major test categories:
 

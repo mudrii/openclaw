@@ -1,8 +1,8 @@
-<!-- markdownlint-disable-file -->
-
 # OpenClaw Codebase Analysis — PART 5: Security, Plugins & Extensions
 
-> Updated: 2026-02-25 | Version: v2026.2.24
+<!-- markdownlint-disable MD024 -->
+
+> Updated: 2026-02-27 | Version: v2026.2.26
 
 ## 1. `src/security/` — Security Guards, Audit, SSRF, Auth
 
@@ -121,6 +121,27 @@ Comprehensive security audit framework, content sanitization, skill/plugin code 
 - **Doctor / Plugins auto-enable** (#25275): auto-enable now resolves third-party channel plugins by manifest plugin id (not channel id), preventing invalid `plugins.entries.<channelId>` writes when the ids differ. Contributor: @zerone0x.
 - **Security / Audit — multi-user heuristic**: `security.trust_model.multi_user_heuristic` config key added to flag likely shared-user ingress patterns and clarify the personal-assistant trust model; hardening guidance provided for intentional multi-user setups (`sandbox.mode="all"`, workspace-scoped FS, reduced tool surface).
 
+#### v2026.2.25 Changes
+
+- **Security / Signal reaction authorization** (@tdjackey): `dmPolicy`/`groupPolicy` authorization is now enforced before Signal reaction-only notification enqueue. Previously, unauthorized senders could inject reaction system events; reactions now require the same channel access checks as normal messages.
+- **Security / Discord reaction authorization** (@tdjackey): DM policy/allowlist authorization is enforced before Discord reaction-event system enqueue in direct messages and guilds. `groupPolicy` channel gating also applies to reaction ingress, aligning it with normal message preflight.
+- **Security / Slack reactions + pins authorization** (@tdjackey): `reaction_*` and `pin_*` system-event enqueue is gated through shared sender authorization: DM `dmPolicy`/`allowFrom` and channel `users` allowlists are enforced for non-message ingress.
+- **Security / Telegram reaction authorization** (@tdjackey): `dmPolicy`/`allowFrom` and group allowlist authorization is enforced on `message_reaction` events before enqueueing reaction system events, preventing unauthorized reaction-triggered input in DMs and groups.
+- **Security / Slack interactions** (@tdjackey): channel/DM authorization and modal actor binding (`private_metadata.userId`) are enforced before enqueueing `block_action`/`view_submission`/`view_closed` system events.
+- **Security / MS Teams file consent** (@tdjackey): `fileConsent/invoke` upload acceptance/decline is bound to the originating conversation before consuming pending uploads, preventing cross-conversation pending-file upload or cancellation via leaked `uploadId` values.
+- **Security / Gateway pairing for operator sessions** (@tdjackey): pairing is now required for operator device-identity sessions authenticated with shared token auth; unpaired devices can no longer self-assign operator scopes.
+- **Security / Exec approvals — argv binding and spawn hardening** (@tdjackey): approval matching is bound to exact argv identity and whitespace; symlink `cwd` paths and non-canonical executable argv are rejected at spawn time, blocking mutable-cwd symlink retarget chains between approval and execution.
+- **Security / Telegram + MS Teams group fail-closed** (#25988, #26111, @bmendonca3): DM pairing-store fallback removed from group allowlist evaluation for both Telegram and MS Teams; group sender access now requires explicit `groupAllowFrom` or per-group `allowFrom`.
+- **Security / Nextcloud Talk replay dedupe + unsigned webhook rejection** (@aristorechina, @bmendonca3): replayed signed webhook events are dropped with persistent per-account dedupe; unsigned traffic rejected before full body reads; unexpected webhook backend origins rejected when account base URL is configured.
+
+#### v2026.2.26 Changes
+
+- **External secrets workflow** — introduces `openclaw secrets` (`audit`, `configure`, `apply`, `reload`) with stricter `secrets apply` target-path validation, safer migration scrubbing, and ref-only auth-profile support (security hardening for secret handling).
+- **DM allowlist inheritance enforcement** — `dmPolicy: "allowlist"` now applies effective account-plus-parent config across account-capable channels, with `openclaw doctor` validation aligned so DM traffic does not silently drop after upgrades.
+- **Allowlist safety checks** — `dmPolicy: "allowlist"` with empty `allowFrom` is rejected; `openclaw doctor --fix` can restore missing `allowFrom` entries from pairing-store data.
+- **Gemini CLI OAuth warning gate** — explicit account-risk warning and confirmation before starting Gemini CLI OAuth flow; docs updated accordingly.
+- **Temp-dir permission hardening** — Linux temp dirs forced to `0700` with self-healing before trust checks to avoid insecure writable temp paths.
+
 ---
 
 ### Key Files
@@ -149,7 +170,7 @@ Comprehensive security audit framework, content sanitization, skill/plugin code 
 ### Exported API
 
 - `runSecurityAudit()` → `SecurityAuditReport` (findings with severity: critical/warn/info)
-- `runSecurityFix()` → `SecurityFixResult` (auto-remediation actions)
+- `fixSecurityFootguns()` → `SecurityFixResult` (auto-remediation actions)
 - `wrapExternalContent()`, `detectSuspiciousPatterns()` — injection defense
 - `safeEqualSecret()` — timing-safe comparison
 - `isPathInside()` — path traversal prevention
@@ -237,7 +258,7 @@ Full plugin lifecycle: discovery, loading, validation, registration, hook execut
 
 - `loadOpenClawPlugins()` → `PluginRegistry`
 - `createHookRunner()` / `initializeGlobalHookRunner()` — lifecycle hook execution
-- `installPlugin()`, `uninstallPlugin()`, `updatePlugin()`
+- `installPluginFromArchive/Dir/File/NpmSpec/Path()`, `uninstallPlugin()`, `updateNpmInstalledPlugins()`
 - `registerPluginCommand()`, `registerPluginHttpRoute()`
 - `discoverOpenClawPlugins()` — plugin discovery
 - `setActivePluginRegistry()` / `getActivePluginRegistry()`
@@ -731,6 +752,7 @@ Documentation generation (only test files found).
 | `nostr/`          | Nostr (NIP-04 encrypted DMs) channel        |
 | `signal/`         | Signal channel                              |
 | `slack/`          | Slack channel                               |
+| `synology-chat/`  | Synology Chat channel                       |
 | `telegram/`       | Telegram channel                            |
 | `tlon/`           | Tlon/Urbit channel                          |
 | `twitch/`         | Twitch channel                              |
@@ -741,13 +763,12 @@ Documentation generation (only test files found).
 
 ### Provider Plugins (auth/model providers)
 
-| Extension                  | Description                       |
-| -------------------------- | --------------------------------- |
-| `copilot-proxy/`           | Copilot Proxy provider            |
-| `google-antigravity-auth/` | Google Antigravity OAuth provider |
-| `google-gemini-cli-auth/`  | Gemini CLI OAuth provider         |
-| `minimax-portal-auth/`     | MiniMax Portal OAuth provider     |
-| `qwen-portal-auth/`        | Qwen Portal OAuth provider        |
+| Extension                 | Description                   |
+| ------------------------- | ----------------------------- |
+| `copilot-proxy/`          | Copilot Proxy provider        |
+| `google-gemini-cli-auth/` | Gemini CLI OAuth provider     |
+| `minimax-portal-auth/`    | MiniMax Portal OAuth provider |
+| `qwen-portal-auth/`       | Qwen Portal OAuth provider    |
 
 ### Tool/Feature Plugins
 

@@ -1,8 +1,8 @@
-<!-- markdownlint-disable-file -->
-
 # OpenClaw Codebase Analysis: Security, Web & Browser Cluster
 
-> Updated: 2026-02-25 | Version: v2026.2.24 | Modules: security, web, browser, canvas-host, plugins, plugin-sdk, acp
+<!-- markdownlint-disable MD024 -->
+
+> Updated: 2026-02-27 | Version: v2026.2.26 | Modules: security, web, browser, canvas-host, plugins, plugin-sdk, acp
 
 ---
 
@@ -43,6 +43,15 @@ Central security audit, remediation, and content-safety module. Provides compreh
 - **Plugin/hook path containment** — `realpath` checks prevent symlink escapes
 - **safeBins trusted dirs** — Binaries must resolve from trusted bin directories; untrusted PATH entries rejected
 - **Cron webhook SSRF guard** — Webhook delivery URLs validated through SSRF guard before dispatch
+
+#### v2026.2.25 Security Hardening
+
+- **Exec approval argv binding and spawn hardening** (@tdjackey): `system.run` approval matching is now bound to exact argv identity and preserves argv whitespace in rendered command text, preventing trailing-space executable path swaps from reusing mismatched approvals. Approval-bound execution on node hosts additionally rejects symlink `cwd` paths and canonicalizes path-like executable argv before spawn, blocking mutable-cwd symlink retarget chains.
+- **Browser uploads revalidation** (security): upload paths are revalidated at use-time in Playwright file-chooser and direct-input flows so missing or rebound paths are rejected before `setFiles`; strict missing-path handling is enforced with regression coverage.
+- **Browser temp path symlink hardening** (@tdjackey): trace/download output-path handling is hardened against symlink-root and symlink-parent escapes via realpath-based write-path checks plus secure fallback tmp-dir validation that fails closed on unsafe fallback symlinks.
+- **Workspace FS hardlink rejection** (@tdjackey): `tools.fs.workspaceOnly` and `tools.exec.applyPatch.workspaceOnly` boundary checks (including sandbox mount-root guards) now reject in-workspace hardlinked file aliases pointing outside the workspace, closing a hardlink-based boundary bypass that realpath alone could not detect.
+- **`agents.files` path hardening** (@tdjackey): `agents.files.get`/`agents.files.set` now blocks out-of-workspace symlink targets while keeping in-workspace symlink targets supported; gateway regression coverage added for both blocked escapes and allowed in-workspace symlinks.
+- **SSRF / IPv6 multicast** (@zpbrent): IPv6 multicast literals (`ff00::/8`) are now classified as blocked/private-internal targets in shared SSRF IP checks, preventing multicast literals from bypassing URL-host preflight and DNS answer validation.
 
 #### v2026.2.22 SSRF Hardening
 
@@ -109,7 +118,7 @@ Central security audit, remediation, and content-safety module. Provides compreh
 - **Non-network navigation schemes blocked** — `fix(browser)`: non-network navigation schemes blocked in browser module (e.g., `file://`, `javascript:`, `data:` URIs)
 - **noVNC observer tokens** — `fix(sandbox)`: noVNC observer sessions now require one-time token auth plus mandatory password auth
 
-### File Inventory (22 files + 2 new infra files)
+### File Inventory (29 TypeScript files in `v2026.2.26`: 19 source + 10 tests)
 
 | File                               | Description                                                                                                      |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -871,7 +880,7 @@ Plugin system for OpenClaw — handles discovery, installation, loading, lifecyc
 ### Configuration
 
 - `plugins.*` — Plugin enable/disable state
-- `plugins.<id>.enabled` — Per-plugin toggle
+- `plugins.entries.<id>.enabled` — Per-plugin toggle
 - Plugin manifests in `openclaw.plugin.json`
 
 ### Test Coverage (16 test files)
@@ -890,7 +899,7 @@ Plugin system for OpenClaw — handles discovery, installation, loading, lifecyc
 
 Public SDK for plugin authors. Re-exports essential types and utilities from internal modules so plugins don't need to import from deep internal paths. Entry point: `index.ts`.
 
-### File Inventory (8 files)
+### File Inventory (36 TypeScript files in `v2026.2.26`: 25 source + 11 tests)
 
 | File               | Description                                                            |
 | ------------------ | ---------------------------------------------------------------------- |
@@ -941,9 +950,9 @@ Public SDK for plugin authors. Re-exports essential types and utilities from int
 
 - `node:fs`, `node:path`, `node:crypto`
 
-### Test Coverage (1 test file)
+### Test Coverage (11 test files)
 
-- `index.test.ts` — Verifies SDK exports are accessible
+- `index.test.ts`, `allow-from.test.ts`, `command-auth.test.ts`, `fetch-auth.test.ts`, `group-access.test.ts`, `persistent-dedupe.test.ts`, `ssrf-policy.test.ts`, `status-helpers.test.ts`, `temp-path.test.ts`, `text-chunking.test.ts`, `webhook-targets.test.ts`
 
 ---
 
@@ -960,7 +969,7 @@ Agent Client Protocol (ACP) implementation — provides an MCP-compatible server
 - **Prompt size bounds** — Prompt input capped at 2 MiB to prevent memory exhaustion
 - See DEVELOPER-REFERENCE.md §9 (gotchas 33–45) for related hardening details
 
-### File Inventory (14 files)
+### File Inventory (43 TypeScript files in `v2026.2.26`: 30 source + 13 tests)
 
 | File                     | Description                                                                       |
 | ------------------------ | --------------------------------------------------------------------------------- |

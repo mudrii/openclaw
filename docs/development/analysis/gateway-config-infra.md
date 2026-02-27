@@ -1,19 +1,19 @@
-<!-- markdownlint-disable-file -->
-
 # OpenClaw Core Architecture — Part 1: Module Analysis
 
-**Updated:** 2026-02-25 | **Version:** v2026.2.24
+<!-- markdownlint-disable MD024 -->
+
+**Updated:** 2026-02-27 | **Version:** v2026.2.26
 **Codebase:** ~/src/openclaw
-**Total lines (6 modules):** ~94,080
+**Total lines (6 modules):** ~169,861
 
 ---
 
 ## 1. `src/gateway/` — HTTP/WebSocket Server & API Endpoints
 
-**Lines:** ~83,178 | **Files:** ~120+ .ts files  
+**Lines:** ~66,951 | **Files:** 294 .ts files  
 **Purpose:** The heart of OpenClaw — runs the gateway server that accepts WebSocket connections from CLI/plugins, exposes HTTP endpoints (OpenAI-compatible API, control UI), manages agent sessions, chat routing, cron, browser control, node subscriptions, and plugin lifecycle.
 
-#### v2026.2.19 Changes
+### v2026.2.19 Changes
 
 - **Gateway auth defaults** — Unresolved auth defaults to token mode with auto-generated token; explicit `mode: "none"` required for open loopback. See DEVELOPER-REFERENCE.md §6 for config reference
 - **hooks.token ≠ gateway.auth.token** — Startup validation rejects matching tokens
@@ -23,7 +23,7 @@
 - **Config change audit logging** — Actor, device, IP, and changed paths now logged on config mutations
 - **Drain-before-restart** — Gateway restart coalesced with cooldown to allow in-flight requests to complete
 
-#### v2026.2.21 Changes <!-- v2026.2.21 -->
+### v2026.2.21 Changes <!-- v2026.2.21 -->
 
 - **Tailscale tokenless auth scoped to WebSocket** (`fix(gateway)`) — Tailscale-based tokenless authentication is now only permitted for WebSocket connections. HTTP API calls always require explicit auth; the tokenless path is no longer reachable from HTTP entrypoints.
 
@@ -39,7 +39,7 @@
 
 - **`customBindHost` config key** — Gateway binding now supports an explicit `customBindHost` config key to override the bind address independent of the `host` setting.
 
-#### v2026.2.22 Changes <!-- v2026.2.22 -->
+### v2026.2.22 Changes <!-- v2026.2.22 -->
 
 **Gateway Auth:**
 
@@ -53,7 +53,7 @@
 - **`bindings[].comment` optional** — Field now optional in strict validation.
 - **Array-valued config paths** — Compared structurally during diffing (fixes false restart-required reloads for QMD paths).
 
-#### v2026.2.23 Changes <!-- v2026.2.23 -->
+### v2026.2.23 Changes <!-- v2026.2.23 -->
 
 **Gateway Auth:**
 
@@ -64,7 +64,7 @@
 - **`unsetPaths` immutable updates** — Config write operations apply `unsetPaths` with immutable path-copy updates.
 - **Prototype-key traversal hardening** — `config get/set/unset` rejects prototype-key path segments.
 
-#### v2026.2.24 Changes <!-- v2026.2.24 -->
+### v2026.2.24 Changes <!-- v2026.2.24 -->
 
 **Security / Audit:**
 
@@ -77,6 +77,18 @@
 **Control UI:**
 
 - **Chat image URL safety** (#25444): image click URL opening now uses a centralized allowlist (`http/https/blob` + opt-in `data:image/*`) with opener isolation (`noopener,noreferrer` + `window.opener = null`) to prevent tabnabbing. Contributor: @shakkernerd. <!-- v2026.2.24 -->
+
+### v2026.2.25 Changes <!-- v2026.2.25 -->
+
+**Security / Gateway WebSocket auth** (@luz-oasis): origin checks are now enforced for all direct browser WebSocket clients beyond Control UI/Webchat. Password-auth failure throttling applies to browser-origin loopback attempts (including `localhost`). Silent auto-pairing is blocked for non-Control-UI browser clients, preventing cross-origin brute-force and session takeover chains.
+
+**Security / Gateway trusted proxy operator role** (@tdjackey): the Control UI trusted-proxy pairing bypass now requires `operator` role; unpaired `node` sessions can no longer connect via `client.id=control-ui` and invoke node event methods.
+
+**Security / Gateway operator pairing** (@tdjackey): pairing is required for operator device-identity sessions authenticated with shared token auth; unpaired devices can no longer self-assign operator scopes.
+
+**Security / macOS beta OAuth path removed** (@zdi-disclosures): the Anthropic OAuth sign-in path and legacy `oauth.json` onboarding that exposed the PKCE verifier via OAuth `state` have been removed from the macOS beta onboarding path. Subscription auth is now setup-token-only.
+
+**Gateway / `/api/channels` auth enforcement** (#25753, @bmendonca3): gateway auth is enforced for the exact `/api/channels` plugin root path (plus `/api/channels/` descendants), with regression coverage for query/trailing-slash variants and near-miss paths that must remain plugin-owned.
 
 ### Key Files & Roles
 
@@ -207,7 +219,7 @@ HTTP:     Client → openai-http.ts or server/plugins-http → server-chat → s
 
 ## 2. `src/config/` — Configuration Loading, Schema & Validation
 
-**Lines:** ~48,565 | **Files:** ~85 .ts files  
+**Lines:** ~36,614 | **Files:** 198 .ts files  
 **Purpose:** Loads, validates, merges, and provides access to `openclaw.json` configuration. Defines all config types, Zod schemas, session management, legacy migration, and path resolution.
 
 ### Key Files & Roles
@@ -325,7 +337,7 @@ openclaw.json → io.ts (read) → parseConfigJson5 → merge-config (includes) 
 
 ## 3. `src/routing/` — Session Key Resolution & Message Routing
 
-**Lines:** ~1,606 (3 files) | **Files:** 3 .ts files  
+**Lines:** ~1,804 | **Files:** 10 .ts files  
 **Purpose:** Resolves which agent handles a message based on channel, chat type, account, and configured bindings. Builds session keys that uniquely identify conversations.
 
 ### Files
@@ -370,7 +382,7 @@ Incoming message (channel, sender, group) → resolveAgentRoute() → { agentId,
 
 ## 4. `src/infra/` — Infrastructure Utilities
 
-**Lines:** ~71,198 | **Files:** ~130+ .ts files  
+**Lines:** ~58,260 | **Files:** 325 .ts files  
 **Purpose:** The utility layer — everything from retry logic, restart management, error handling, home directory resolution, outbound message delivery, exec approvals, heartbeat, update checking, device pairing, network utilities, provider usage tracking, and more.
 
 ### Major Subsystems
@@ -457,15 +469,15 @@ Incoming message (channel, sender, group) → resolveAgentRoute() → { agentId,
 
 #### Provider Usage Tracking
 
-| File                                                                                                                                         | Role                       |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
-| `provider-usage.ts`                                                                                                                          | Main usage tracking        |
-| `provider-usage.load.ts`                                                                                                                     | Load usage data            |
-| `provider-usage.format.ts`                                                                                                                   | Format usage for display   |
-| `provider-usage.fetch.ts`                                                                                                                    | Fetch usage from providers |
-| `provider-usage.fetch.claude.ts` / `.gemini.ts` / `.codex.ts` / `.copilot.ts` / `.minimax.ts` / `.zai.ts` / `.antigravity.ts` / `.shared.ts` | Provider-specific fetchers |
-| `provider-usage.auth.ts`                                                                                                                     | Usage auth                 |
-| `provider-usage.types.ts` / `.shared.ts`                                                                                                     | Types                      |
+| File                                                                                                                     | Role                       |
+| ------------------------------------------------------------------------------------------------------------------------ | -------------------------- |
+| `provider-usage.ts`                                                                                                      | Main usage tracking        |
+| `provider-usage.load.ts`                                                                                                 | Load usage data            |
+| `provider-usage.format.ts`                                                                                               | Format usage for display   |
+| `provider-usage.fetch.ts`                                                                                                | Fetch usage from providers |
+| `provider-usage.fetch.claude.ts` / `.gemini.ts` / `.codex.ts` / `.copilot.ts` / `.minimax.ts` / `.zai.ts` / `.shared.ts` | Provider-specific fetchers |
+| `provider-usage.auth.ts`                                                                                                 | Usage auth                 |
+| `provider-usage.types.ts` / `.shared.ts`                                                                                 | Types                      |
 
 #### Networking & Discovery
 
@@ -551,7 +563,7 @@ Heartbeat: Timer → heartbeat-runner → heartbeat-events → agent proactive a
 
 ## 5. `src/daemon/` — Process Management & Service Lifecycle
 
-**Lines:** ~5,098 | **Files:** ~25 .ts files  
+**Lines:** ~6,093 | **Files:** 42 .ts files  
 **Purpose:** Manages OpenClaw as a system service — installing/uninstalling launchd (macOS), systemd (Linux), and schtasks (Windows) services. Handles service runtime, diagnostics, and log paths.
 
 ### Files
@@ -613,7 +625,7 @@ Service runs: openclaw gateway start → server.impl.ts (gateway module)
 
 ## 6. `src/types/` — Shared Type Definitions
 
-**Lines:** ~9 files, minimal | **Files:** 9 `.d.ts` files  
+**Lines:** ~139 | **Files:** 8 `.d.ts` files  
 **Purpose:** Ambient TypeScript declarations for third-party modules that lack types.
 
 ### Files
