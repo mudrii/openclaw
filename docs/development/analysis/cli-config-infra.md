@@ -261,49 +261,49 @@ type RouteSpec = {
 
 ### Command Reference (Top-Level)
 
-| Command               | Description                                                                         |
-| --------------------- | ----------------------------------------------------------------------------------- |
-| `openclaw setup`      | Setup helpers                                                                       |
-| `openclaw onboard`    | Onboarding wizard                                                                   |
-| `openclaw configure`  | Configuration wizard                                                                |
-| `openclaw config`     | Config get/set/edit/path                                                            |
-| `openclaw doctor`     | Health checks + quick fixes                                                         |
-| `openclaw dashboard`  | Open Control UI                                                                     |
-| `openclaw reset`      | Reset local config/state                                                            |
-| `openclaw uninstall`  | Uninstall gateway service + data                                                    |
-| `openclaw message`    | Send, read, manage messages (send/read/edit/delete/react/broadcast/poll/thread/pin) |
-| `openclaw memory`     | Memory management                                                                   |
-| `openclaw agent`      | Agent commands                                                                      |
-| `openclaw agents`     | Multi-agent management (list/add/delete/identity)                                   |
-| `openclaw status`     | Gateway status overview                                                             |
-| `openclaw health`     | Gateway health check                                                                |
-| `openclaw sessions`   | Session management                                                                  |
-| `openclaw browser`    | Browser automation tools                                                            |
-| `openclaw gateway`    | Gateway control (start/stop/restart/status/call/dev/discover)                       |
-| `openclaw daemon`     | Legacy service management alias                                                     |
-| `openclaw logs`       | View gateway logs                                                                   |
-| `openclaw system`     | System events, heartbeat, presence                                                  |
-| `openclaw models`     | Model configuration (list/set/status/scan/auth)                                     |
-| `openclaw approvals`  | Exec approval management                                                            |
-| `openclaw nodes`      | Node management (status/pair/camera/screen/canvas/invoke/notify/location)           |
-| `openclaw devices`    | Device pairing + token management                                                   |
-| `openclaw node`       | Single node control                                                                 |
-| `openclaw sandbox`    | Sandbox tools                                                                       |
-| `openclaw tui`        | Terminal UI                                                                         |
-| `openclaw cron`       | Cron scheduler (list/add/edit/remove/enable/disable)                                |
-| `openclaw dns`        | DNS helpers                                                                         |
-| `openclaw docs`       | Documentation helpers                                                               |
-| `openclaw hooks`      | Hooks tooling                                                                       |
-| `openclaw webhooks`   | Webhook helpers                                                                     |
-| `openclaw pairing`    | Pairing helpers                                                                     |
-| `openclaw plugins`    | Plugin management                                                                   |
-| `openclaw channels`   | Channel management                                                                  |
-| `openclaw directory`  | Directory commands                                                                  |
-| `openclaw security`   | Security helpers                                                                    |
-| `openclaw skills`     | Skills management                                                                   |
-| `openclaw update`     | CLI update                                                                          |
-| `openclaw completion` | Shell completion script generation                                                  |
-| `openclaw acp`        | Agent Control Protocol tools                                                        |
+| Command               | Description                                                                                 |
+| --------------------- | ------------------------------------------------------------------------------------------- |
+| `openclaw setup`      | Setup helpers                                                                               |
+| `openclaw onboard`    | Onboarding wizard                                                                           |
+| `openclaw configure`  | Configuration wizard                                                                        |
+| `openclaw config`     | Config get/set/edit/path                                                                    |
+| `openclaw doctor`     | Health checks + quick fixes                                                                 |
+| `openclaw dashboard`  | Open Control UI                                                                             |
+| `openclaw reset`      | Reset local config/state                                                                    |
+| `openclaw uninstall`  | Uninstall gateway service + data                                                            |
+| `openclaw message`    | Send, read, manage messages (send/read/edit/delete/react/broadcast/poll/thread/pin)         |
+| `openclaw memory`     | Memory management                                                                           |
+| `openclaw agent`      | Agent commands                                                                              |
+| `openclaw agents`     | Multi-agent management (list/add/delete/identity)                                           |
+| `openclaw status`     | Gateway status overview                                                                     |
+| `openclaw health`     | Gateway health check                                                                        |
+| `openclaw sessions`   | Session management                                                                          |
+| `openclaw browser`    | Browser automation tools                                                                    |
+| `openclaw gateway`    | Gateway control (start/stop/restart/status/call/dev/discover)                               |
+| `openclaw daemon`     | Legacy service management alias                                                             |
+| `openclaw logs`       | View gateway logs                                                                           |
+| `openclaw system`     | System events, heartbeat, presence                                                          |
+| `openclaw models`     | Model configuration (list/set/status/scan/auth)                                             |
+| `openclaw approvals`  | Exec approval management                                                                    |
+| `openclaw nodes`      | Node management (status/pending/approve/reject/camera/screen/canvas/invoke/notify/location) |
+| `openclaw devices`    | Device pairing + token management                                                           |
+| `openclaw node`       | Single node control                                                                         |
+| `openclaw sandbox`    | Sandbox tools                                                                               |
+| `openclaw tui`        | Terminal UI                                                                                 |
+| `openclaw cron`       | Cron scheduler (list/add/edit/remove/enable/disable)                                        |
+| `openclaw dns`        | DNS helpers                                                                                 |
+| `openclaw docs`       | Documentation helpers                                                                       |
+| `openclaw hooks`      | Hooks tooling                                                                               |
+| `openclaw webhooks`   | Webhook helpers                                                                             |
+| `openclaw pairing`    | Pairing helpers                                                                             |
+| `openclaw plugins`    | Plugin management                                                                           |
+| `openclaw channels`   | Channel management                                                                          |
+| `openclaw directory`  | Directory commands                                                                          |
+| `openclaw security`   | Security helpers                                                                            |
+| `openclaw skills`     | Skills management                                                                           |
+| `openclaw update`     | CLI update                                                                                  |
+| `openclaw completion` | Shell completion script generation                                                          |
+| `openclaw acp`        | Agent Control Protocol tools                                                                |
 
 ### Internal Dependencies
 
@@ -1564,7 +1564,7 @@ User types: openclaw <command> [args]
 
 ---
 
-_Analysis complete. 952 TypeScript files across 8 modules analyzed._
+_Analysis complete. 1,216 TypeScript files across 8 modules analyzed._
 
 ---
 
